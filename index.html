@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FARMACIA 2.0- DISTEL DIEGO®</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            padding: 1rem 0.5rem;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 100%;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            padding: 1rem 0.5rem 1.5rem;
+            overflow-x: auto;
+        }
+        .header-paciente {
+            background: linear-gradient(135deg, #1d3557 0%, #2a7de1 100%);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        .header-paciente .campo { display: flex; flex-direction: column; gap: 3px; min-width: 150px; }
+        .header-paciente .campo label {
+            font-size: 0.6rem; opacity: 0.85; text-transform: uppercase;
+            letter-spacing: 0.5px; font-weight: 600;
+        }
+        .header-paciente .campo select,
+        .header-paciente .campo input {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white; border-radius: 20px;
+            padding: 5px 10px; font-size: 0.75rem; font-weight: 500;
+            width: 100%; cursor: pointer;
+        }
+        .header-paciente .campo select option { background: white; color: #1d3557; }
+        .header-paciente .campo select:focus,
+        .header-paciente .campo input:focus { outline: none; border-color: white; background: rgba(255,255,255,0.25); }
+        .header-paciente .campo input[readonly] { background: rgba(255,255,255,0.1); cursor: default; }
+
+        h2 {
+            font-weight: 500; font-size: 1.3rem; color: #0b2b4a;
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 1rem; padding-left: 0.5rem;
+            border-left: 5px solid #2a7de1; flex-wrap: wrap;
+        }
+        h2 i { color: #2a7de1; font-size: 1.4rem; }
+
+        .tabs-container {
+            display: flex; gap: 4px; margin-bottom: 1rem;
+            border-bottom: 2px solid #dce5f0; flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: #f0f5fe; border: none; padding: 8px 20px;
+            border-radius: 12px 12px 0 0; font-size: 0.85rem; font-weight: 600;
+            color: #2a4b6e; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 8px;
+            border: 1px solid transparent; border-bottom: none;
+        }
+        .tab-btn i { font-size: 1rem; }
+        .tab-btn:hover { background: #e3ecfa; }
+        .tab-btn.active {
+            background: white; color: #1d3557;
+            border-color: #dce5f0; border-bottom: 2px solid white;
+            margin-bottom: -2px;
+        }
+        .tab-btn .badge-tab {
+            background: #1d6f9c; color: white; border-radius: 50%;
+            padding: 0 6px; font-size: 0.6rem; line-height: 1.4;
+        }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0.5; } to { opacity: 1; } }
+
+        .table-wrapper { overflow: visible; border-radius: 14px; border: 1px solid #dde2e9; }
+        table {
+            width: 100%; border-collapse: collapse; font-size: 0.7rem;
+            min-width: 1400px; background: white;
+        }
+        th {
+            background: #1d3557; color: white; font-weight: 600;
+            padding: 6px 4px; text-align: center; white-space: nowrap;
+            position: sticky; top: 0; z-index: 5;
+            border-right: 1px solid #2d4a72; font-size: 0.65rem;
+        }
+        th:last-child { border-right: none; }
+        td {
+            padding: 5px 3px; border-bottom: 1px solid #e9ecf0;
+            vertical-align: top; background-color: white; position: relative;
+        }
+        tr:hover td { background-color: #f8faff; }
+
+        .medico-input {
+            border: 1px solid #bacfe3; border-radius: 20px;
+            padding: 3px 8px; font-size: 0.7rem; background: white;
+            width: 100%; min-width: 70px;
+        }
+        .medico-input:focus {
+            outline: none; border-color: #1d6f9c;
+            box-shadow: 0 0 0 2px rgba(29,111,156,0.15);
+        }
+
+        .buscador-wrapper { position: relative; width: 100%; }
+        .buscador-input {
+            border: 1px solid #bacfe3; border-radius: 20px;
+            padding: 4px 24px 4px 10px; font-size: 0.7rem;
+            background: white; width: 100%;
+        }
+        .buscador-input:focus {
+            outline: none; border-color: #1d6f9c;
+            box-shadow: 0 0 0 2px rgba(29,111,156,0.15);
+        }
+        .buscador-wrapper .lupa {
+            position: absolute; right: 8px; top: 50%;
+            transform: translateY(-50%); color: #6a7f96;
+            font-size: 0.65rem; pointer-events: none;
+        }
+
+        .buscador-dropdown-embebido {
+            position: static !important; box-shadow: none;
+            border: 1px solid #1d6f9c; border-radius: 8px;
+            margin-top: 3px; max-height: 260px; overflow-y: auto;
+            width: 100%; background: white; display: none;
+        }
+        .buscador-dropdown-embebido.visible { display: block; }
+
+        .buscador-item {
+            padding: 8px 10px; cursor: pointer; font-size: 0.7rem;
+            border-bottom: 1px solid #f0f5fe; display: flex;
+            justify-content: space-between; align-items: center; gap: 8px;
+        }
+        .buscador-item:hover { background: #e3f2fd; }
+        .buscador-item .item-nombre { font-weight: 500; color: #1d3d5c; flex: 1; }
+        .buscador-item .item-codigo { background: #eef3f9; padding: 0 6px; border-radius: 8px; font-size: 0.55rem; }
+
+        .trazabilidad-box {
+            background: #f5f5f5; border-left: 3px solid #1d6f9c;
+            border-radius: 6px; padding: 3px 6px; margin-top: 2px;
+            font-size: 0.55rem; color: #2a4b6e; line-height: 1.4;
+        }
+
+        .select-horario {
+            border: 1px solid #bacfe3; border-radius: 16px;
+            padding: 2px 6px; font-size: 0.6rem; background: white;
+            width: 100%; min-width: 130px; height: 24px;
+        }
+
+        .desc-container {
+            display: flex; flex-direction: column; gap: 3px;
+            background: #f5f9ff; padding: 4px 6px; border-radius: 10px;
+            border: 1px solid #dce5f0; max-height: 500px; overflow-y: auto;
+        }
+
+        .desc-item-row {
+            display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
+            background: white; padding: 1px 4px; border-radius: 6px;
+            border: 1px solid #e2e8f0; font-size: 0.6rem;
+        }
+        .desc-item-row.farmacia-item { background: #fff8e1; border-color: #ffcc80; }
+        .desc-item-row .item-nombre { font-weight: 500; color: #1d3d5c; min-width: 80px; font-size: 0.6rem; }
+        .desc-item-row .item-codigo { color: #6a7f96; font-size: 0.5rem; background: #eef3f9; padding: 0 4px; border-radius: 8px; }
+        .desc-item-row .qty-display { min-width: 14px; text-align: center; font-weight: 600; font-size: 0.65rem; }
+        .desc-item-row .remove-item { background: transparent; border: none; color: #b33; cursor: pointer; font-size: 0.6rem; }
+
+        .btn-agregar-fila, .btn-autorizar, .btn-ejecutar, .btn-finalizar {
+            border: none; border-radius: 25px; padding: 5px 16px; font-size: 0.75rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; color: white; transition: 0.2s;
+        }
+        .btn-agregar-fila { background: #1d6f9c; margin-top: 8px; }
+        .btn-autorizar { background: #2e7d32; font-size: 0.65rem; padding: 4px 14px; }
+        .btn-ejecutar { background: #1565c0; font-size: 0.65rem; padding: 4px 14px; }
+        .btn-finalizar { background: #c62828; font-size: 0.65rem; padding: 4px 14px; }
+
+        .estado-pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 14px; font-size: 0.65rem; font-weight: 700; }
+        .estado-pill.pendiente { background: #fff9c4; color: #f57f17; }
+        .estado-pill.ejecutado { background: #c8e6c9; color: #1b5e20; }
+
+        .stock-progress-bar {
+            background: #e0e0e0; border-radius: 10px; height: 10px; width: 100%; overflow: hidden; position: relative;
+        }
+        .stock-progress-fill {
+            background: #4caf50; height: 100%; transition: width 0.3s ease;
+        }
+        .stock-progress-fill.warning { background: #ff9800; }
+        .stock-progress-fill.danger { background: #f44336; }
+
+        .resumen-farmacia {
+            margin-top: 12px; padding: 10px 14px; background: #fff8e1;
+            border-radius: 14px; border: 1px solid #ffecb3; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+        }
+        .resumen-farmacia .titulo { font-weight: 600; color: #7a4a00; font-size: 0.75rem; }
+
+        .turno-section { margin-bottom: 22px; border: 2px solid #dce5f0; border-radius: 14px; overflow: hidden; background: #fafcff; }
+        .turno-header { background: linear-gradient(90deg, #1d3557, #2a7de1); color: white; padding: 10px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+        .turno-body { padding: 8px; overflow-x: auto; }
+
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95);
+            display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; z-index: 9999;
+        }
+        .loading-spinner { border: 4px solid #e3f2fd; border-top-color: #1d6f9c; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .footer-creditos { text-align: center; padding: 18px 10px 6px; margin-top: 20px; border-top: 1px solid #dce5f0; color: #6a7f96; font-size: 0.85rem; font-weight: 600; }
+        .footer-creditos .marca { display: inline-flex; align-items: center; gap: 8px; color: #1d3557; }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div style="color: #1d3557; font-weight: 600;">Iniciando Farmacia 2.0 - UCIA...</div>
+    <div style="color: #6a7f96; font-size: 0.75rem;" id="loadingStatus">Cargando módulos...</div>
+</div>
+
+<div class="container">
+
+    <div class="header-paciente">
+        <div class="campo">
+            <label><i class="fas fa-hospital"></i> Servicio</label>
+            <select id="servicioSelect">
+                <option value="UCI Adultos">UCI Adultos</option>
+            </select>
+        </div>
+        <div class="campo" style="min-width:100px;">
+            <label><i class="fas fa-bed"></i> Cama</label>
+            <input type="text" id="camaInput" readonly value="UCI-01">
+        </div>
+        <div class="campo" style="min-width:200px;">
+            <label><i class="fas fa-user"></i> Paciente</label>
+            <input type="text" id="pacienteInput" readonly value="Pérez, Juan Carlos (65 años)">
+        </div>
+    </div>
+
+    <h2><i class="fas fa-clipboard-list"></i> Gestión de Indicaciones y Control de Stock UCIA</h2>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" data-tab="tab-medico"><i class="fas fa-user-md"></i> Médico <span class="badge-tab" id="badgeMedico">0</span></button>
+        <button class="tab-btn" data-tab="tab-enfermeria"><i class="fas fa-user-nurse"></i> Enfermería <span class="badge-tab" id="badgeEnfermeria">0</span></button>
+        <button class="tab-btn" data-tab="tab-farmacia"><i class="fas fa-prescription-bottle-alt"></i> Farmacia <span class="badge-tab" id="badgeFarmacia">0</span></button>
+        <button class="tab-btn" data-tab="tab-stock"><i class="fas fa-boxes"></i> Control de Stock (100%) <span class="badge-tab" id="badgeStock">0</span></button>
+    </div>
+
+    <!-- ===== TAB MÉDICO ===== -->
+    <div class="tab-content active" id="tab-medico">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+            <span style="font-size:0.75rem; color:#2a4b6e;"><i class="fas fa-info-circle"></i> Complete los datos y presione <strong>Autorizar</strong>. Al ejecutarse, descontará automáticamente del stock.</span>
+            <button class="btn-agregar-fila" onclick="agregarFilaMedico()"><i class="fas fa-plus-circle"></i> Nueva indicación</button>
+        </div>
+        <div class="table-wrapper">
+            <table id="tablaMedico">
+                <thead>
+                    <tr>
+                        <th style="min-width:30px;">Ord</th>
+                        <th style="min-width:80px;">Tipo</th>
+                        <th style="min-width:180px;">Indicación Médica</th>
+                        <th style="min-width:230px;">Farmacia 🔍</th>
+                        <th style="min-width:70px;">Vía</th>
+                        <th style="min-width:140px;">Frecuencia</th>
+                        <th style="min-width:140px;">Médico / Autorización</th>
+                        <th style="min-width:120px;">Estado</th>
+                        <th style="min-width:70px;">Autorizar</th>
+                        <th style="min-width:90px;">Finalizar / Suspender</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyMedico">
+                    <tr class="fila-medico" id="filaBase" data-fila-id="1">
+                        <td><span class="orden-auto" id="ordenDisplay-1">1</span></td>
+                        <td>
+                            <select class="medico-input" id="tipo-1" style="min-width:80px;">
+                                <option value="">Tipo</option>
+                                <option value="PHP">PHP</option>
+                                <option value="MEDICACION">MEDICACION</option>
+                                <option value="ANALGESIA">ANALGESIA</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="medico-input" id="indicacionMedica-1" placeholder="Ej: PHP con Mg y K">
+                        </td>
+                        <td>
+                            <div class="desc-container farmacia-medico">
+                                <div class="desc-lista" id="farmaciaLista-1">
+                                    <div style="color:#6a7f96; font-size:0.6rem; padding:3px;">Buscar y agregar items de farmacia...</div>
+                                </div>
+                                <div class="desc-actions" style="display:flex; gap:4px; margin-top:2px;">
+                                    <div class="buscador-wrapper" style="flex:1;">
+                                        <input type="text" class="buscador-input" id="farmaciaBuscador-1" placeholder="🔍 Buscar en stock UCIA..." autocomplete="off">
+                                        <i class="fas fa-search lupa"></i>
+                                        <div class="buscador-dropdown-embebido" id="farmaciaDropdown-1"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <select class="medico-input" id="via-1">
+                                <option value="Endovenosa">Endovenosa</option>
+                                <option value="Oral">Oral</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="select-horario" id="frecuencia-1">
+                                <option value="Cada 6 h|01:00|07:00|13:00|19:00">Cada 6 h (01·07·13·19)</option>
+                                <option value="Cada 12 h|07:00|19:00">Cada 12 h (07·19)</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" class="medico-input" id="profMedico-1" placeholder="Nombre médico">
+                            <div class="trazabilidad-box"><span id="fechaMedico-1">—</span> <span id="horaMedico-1">—</span></div>
+                        </td>
+                        <td><span class="estado-pill pendiente" id="estadoPills-1"><i class="fas fa-clock"></i> Pendiente</span></td>
+                        <td><button class="btn-autorizar" onclick="autorizarIndicacion('1')"><i class="fas fa-check-circle"></i> Autorizar</button></td>
+                        <td><button class="btn-finalizar" id="btnFinalizar-1" onclick="finalizarIndicacion('1')" disabled style="opacity:0.4; cursor:not-allowed;"><i class="fas fa-stop-circle"></i> Finalizar</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== TAB ENFERMERÍA ===== -->
+    <div class="tab-content" id="tab-enfermeria">
+        <div class="seccion-enfermeria">
+            <h3 style="border-left-color: #2e7d32; font-size: 0.9rem; margin-bottom: 8px;"><i class="fas fa-user-nurse"></i> Ejecución por Turnos (Descuenta Stock al confirmar)</h3>
+            <div id="turnosContainer"></div>
+        </div>
+    </div>
+
+    <!-- ===== TAB FARMACIA ===== -->
+    <div class="tab-content" id="tab-farmacia">
+        <div class="resumen-farmacia" id="resumenFarmacia">
+            <span class="titulo"><i class="fas fa-boxes"></i> Resumen de solicitudes:</span>
+            <span id="farmaciaTags">Sin materiales pedidos</span>
+        </div>
+        <div class="table-wrapper" style="margin-top: 10px;">
+            <table id="tablaFarmacia">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Material</th>
+                        <th>Código</th>
+                        <th>Cant</th>
+                        <th>Origen / Indicación</th>
+                        <th>Horario</th>
+                        <th>Solicitado por</th>
+                        <th>Fecha / Hora</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyFarmacia">
+                    <tr><td colspan="9" style="text-align:center;color:#6a7f96;padding:15px;">No hay solicitudes registradas.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== TAB CONTROL DE STOCK (100%) ===== -->
+    <div class="tab-content" id="tab-stock">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-size:0.75rem; color:#2a4b6e;"><i class="fas fa-info-circle"></i> El <strong>Stock Final Redondeado</strong> actúa como el 100% inicial. Las ejecuciones descuentan de este total.</span>
+            <input type="text" id="buscadorStockRepo" placeholder="🔍 Filtrar por insumo o código..." oninput="filtrarTablaStock()" class="medico-input" style="max-width:250px;">
+        </div>
+        <div class="table-wrapper">
+            <table id="tablaStockRepo">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Insumo / Monodroga (UCIA)</th>
+                        <th>Stock Inicial (100%)</th>
+                        <th>Consumido / Descontado</th>
+                        <th>Stock Actual Restante</th>
+                        <th>Nivel %</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyStockRepo"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer-creditos">
+        <span class="marca"><i class="fas fa-heartbeat"></i> DIEGO DISTEL® — GESTIÓN UCIA</span>
+    </div>
+</div>
+
+<script>
+    let VADEMECUM = [];
+    let STOCK_REPO = {};
+    let farmaciaItems = [];
+    let indicacionesAutorizadas = {};
+
+    const TURNOS = [
+        { id: 'manana', nombre: 'Mañana', horario: '06:00 - 12:00' },
+        { id: 'tarde', nombre: 'Tarde', horario: '12:00 - 18:00' },
+        { id: 'vespertino', nombre: 'Vespertino', horario: '18:00 - 00:00' },
+        { id: 'noche', nombre: 'Noche', horario: '00:00 - 06:00' }
+    ];
+
+    // Vademecum de respaldo por si vades.json aún no está subido
+    const VADEMECUM_RESPALDO = [
+        { "Codigo": 815, "Monodroga": "JERINGA DESCARTABLE DE 10 ML. CON NORMAS ISO O IRAM.", "STOCK FINAL REDONDEADO": 278 },
+        { "Codigo": 2705, "Monodroga": "AGUJA DESCARTABLE 30/12 (18 G X 1 1/4”)", "STOCK FINAL REDONDEADO": 272 },
+        { "Codigo": 816, "Monodroga": "JERINGA DESCARTABLE DE 20 ML. CON NORMAS ISO O IRAM.", "STOCK FINAL REDONDEADO": 186 },
+        { "Codigo": 615, "Monodroga": "FENTANILO CITRATO 50 MCG./ML.", "STOCK FINAL REDONDEADO": 176 },
+        { "Codigo": 950, "Monodroga": "MIDAZOLAM 15 MG. AMP.", "STOCK FINAL REDONDEADO": 152 },
+        { "Codigo": 70020, "Monodroga": "CAMISOLIN CON PUÑO HEMORREPELENTE 45GR.", "STOCK FINAL REDONDEADO": 144 },
+        { "Codigo": 50611, "Monodroga": "BARBIJO DESCARTABLE PARA CIRUGIA 3 TELAS", "STOCK FINAL REDONDEADO": 132 },
+        { "Codigo": 359, "Monodroga": "ELECTRODO DESCARTABLE ADULTO", "STOCK FINAL REDONDEADO": 127 },
+        { "Codigo": 84, "Monodroga": "AGUJA DESCARTABLE 25/8 (21 G X 1\")", "STOCK FINAL REDONDEADO": 124 }
+    ];
+
+    async function cargarVademecumYStock() {
+        let rawData = [];
+        try {
+            const response = await fetch('vades.json');
+            if (!response.ok) throw new Error('No se encontró vades.json');
+            rawData = await response.json();
+            document.getElementById('loadingStatus').textContent = 'vades.json cargado con éxito.';
+        } catch (e) {
+            console.warn('Usando respaldo interno de UCIA mientras se detecta vades.json:', e);
+            rawData = VADEMECUM_RESPALDO;
+            document.getElementById('loadingStatus').textContent = 'Usando base interna de respaldo UCIA...';
+        }
+
+        VADEMECUM = [];
+        rawData.forEach(row => {
+            const codigo = String(row["Codigo"] || row["1"] || "").padStart(5, '0');
+            const nombre = row["Monodroga"] || Object.values(row)[2] || "Insumo UCIA";
+            const stockRedondeado = parseInt(row["STOCK FINAL REDONDEADO"] || 100);
+
+            if (nombre && nombre !== "NO EXISTE") {
+                VADEMECUM.push({
+                    codigo: codigo,
+                    nombre: nombre.trim(),
+                    stockInicial: stockRedondeado
+                });
+                
+                STOCK_REPO[codigo] = {
+                    nombre: nombre.trim(),
+                    inicial: stockRedondeado,
+                    consumido: 0
+                };
+            }
+        });
+    }
+
+    function configurarBuscador(input, dropdown, fuente, onSelect) {
+        input.addEventListener('input', () => {
+            const q = input.value.toLowerCase();
+            dropdown.innerHTML = '';
+            if (!q) { dropdown.classList.remove('visible'); return; }
+            
+            const filtrados = fuente.filter(i => i.nombre.toLowerCase().includes(q) || i.codigo.includes(q)).slice(0, 30);
+            if (filtrados.length === 0) {
+                dropdown.innerHTML = '<div style="padding:8px; font-size:0.65rem; color:#6a7f96;">Sin resultados</div>';
+            } else {
+                filtrados.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'buscador-item';
+                    div.innerHTML = `<span class="item-nombre">${item.nombre}</span> <span class="item-codigo">${item.codigo}</span> <span style="font-size:0.55rem; color:#2e7d32;">Stock 100%: ${item.stockInicial}</span>`;
+                    div.onmousedown = (e) => { e.preventDefault(); onSelect(item); dropdown.classList.remove('visible'); };
+                    dropdown.appendChild(div);
+                });
+            }
+            dropdown.classList.add('visible');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await cargarVademecumYStock();
+        document.getElementById('loadingOverlay').style.display = 'none';
+
+        configurarBuscadorFarmaciaFila('1');
+        renderizarTurnos();
+        renderizarTablaStock();
+        actualizarBadges();
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+                if (this.dataset.tab === 'tab-stock') renderizarTablaStock();
+            });
+        });
+    });
+
+    function configurarBuscadorFarmaciaFila(id) {
+        const input = document.getElementById(`farmaciaBuscador-${id}`);
+        const dropdown = document.getElementById(`farmaciaDropdown-${id}`);
+        if (!input || !dropdown) return;
+        configurarBuscador(input, dropdown, VADEMECUM, (item) => {
+            agregarItemFarmaciaFila(id, item.nombre, item.codigo, 1);
+            input.value = '';
+        });
+    }
+
+    function agregarItemFarmaciaFila(id, nombre, codigo, cantidad) {
+        const lista = document.getElementById(`farmaciaLista-${id}`);
+        if (!lista) return;
+        const msj = lista.querySelector('div[style]');
+        if (msj) msj.remove();
+
+        const div = document.createElement('div');
+        div.className = 'desc-item-row farmacia-item';
+        div.innerHTML = `
+            <span style="background:#ffb74d; color:#7a4a00; font-size:0.5rem; padding:0 4px; border-radius:8px;">FARM</span>
+            <span class="item-nombre">${nombre}</span>
+            <span class="item-codigo">${codigo}</span>
+            <span class="qty-display">${cantidad}</span>
+            <button class="remove-item" onclick="this.closest('.desc-item-row').remove()">✕</button>
+        `;
+        lista.appendChild(div);
+    }
+
+    function obtenerItemsFarmaciaFila(id) {
+        const lista = document.getElementById(`farmaciaLista-${id}`);
+        if (!lista) return [];
+        const items = [];
+        lista.querySelectorAll('.desc-item-row').forEach(row => {
+            items.push({
+                nombre: row.querySelector('.item-nombre').textContent.trim(),
+                codigo: row.querySelector('.item-codigo').textContent.trim(),
+                cantidad: parseInt(row.querySelector('.qty-display').textContent) || 1
+            });
+        });
+        return items;
+    }
+
+    function autorizarIndicacion(id) {
+        const tipo = document.getElementById(`tipo-${id}`).value;
+        const indicacionMedica = document.getElementById(`indicacionMedica-${id}`).value.trim();
+        const prof = document.getElementById(`profMedico-${id}`).value.trim();
+        const freqParts = document.getElementById(`frecuencia-${id}`).value.split('|');
+
+        if (!tipo || !indicacionMedica || !prof) { alert('Complete los campos obligatorios.'); return; }
+
+        const itemsFarmacia = obtenerItemsFarmaciaFila(id);
+        const horarios = freqParts.slice(1);
+
+        document.getElementById(`fechaMedico-${id}`).textContent = new Date().toLocaleDateString();
+        document.getElementById(`horaMedico-${id}`).textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        indicacionesAutorizadas[id] = {
+            tipo, indicacionMedica, medico: prof,
+            horarios, itemsFarmacia, estadosPorHorario: {}, activa: true
+        };
+
+        itemsFarmacia.forEach(it => {
+            horarios.forEach(h => {
+                farmaciaItems.push({
+                    material: it.nombre, codigo: it.codigo, cantidad: it.cantidad,
+                    indicacion: indicacionMedica, horario: h, solicitadoPor: prof,
+                    fecha: new Date().toLocaleDateString(), estado: 'Pendiente', ordenId: id
+                });
+            });
+        });
+
+        document.getElementById(`btnFinalizar-${id}`).disabled = false;
+        document.getElementById(`btnFinalizar-${id}`).style.opacity = '1';
+        document.getElementById(`btnFinalizar-${id}`).style.cursor = 'pointer';
+        
+        renderizarTurnos();
+        actualizarFarmacia();
+        actualizarBadges();
+        alert('✅ Indicación autorizada con éxito.');
+    }
+
+    function renderizarTurnos() {
+        const container = document.getElementById('turnosContainer');
+        container.innerHTML = '';
+
+        TURNOS.forEach(turno => {
+            let htmlFilas = '';
+            Object.keys(indicacionesAutorizadas).forEach(ordenId => {
+                const data = indicacionesAutorizadas[ordenId];
+                if (!data.activa) return;
+
+                data.horarios.forEach(h => {
+                    const registro = data.estadosPorHorario[h];
+                    const ejecutado = registro?.estado === 'ejecutado';
+
+                    htmlFilas += `
+                        <tr style="background: ${ejecutado ? '#e8f5e9' : 'white'};">
+                            <td>${ordenId}</td>
+                            <td><strong>${data.indicacionMedica}</strong><br><small>${data.medico}</small></td>
+                            <td><span style="background:#e3f2fd; padding:2px 6px; border-radius:6px; font-weight:600;">${h}</span></td>
+                            <td>${data.itemsFarmacia.map(i => `${i.nombre} (x${i.cantidad})`).join(', ')}</td>
+                            <td>${ejecutado ? '<span class="estado-pill ejecutado">Ejecutado</span>' : `<button class="btn-ejecutar" onclick="ejecutarHorario('${ordenId}', '${h}')">Ejecutar (Descontar Stock)</button>`}</td>
+                        </tr>
+                    `;
+                });
+            });
+
+            if (htmlFilas) {
+                container.innerHTML += `
+                    <div class="turno-section">
+                        <div class="turno-header"><span>Turno ${turno.nombre} (${turno.horario})</span></div>
+                        <div class="turno-body">
+                            <table>
+                                <thead><tr><th>Ord</th><th>Indicación</th><th>Horario</th><th>Insumos</th><th>Acción</th></tr></thead>
+                                <tbody>${htmlFilas}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        if (!container.innerHTML) container.innerHTML = '<div style="padding:15px; color:#6a7f96; text-align:center;">No hay indicaciones activas en turnos.</div>';
+    }
+
+    function ejecutarHorario(ordenId, horario) {
+        const data = indicacionesAutorizadas[ordenId];
+        data.estadosPorHorario[horario] = { estado: 'ejecutado' };
+
+        data.itemsFarmacia.forEach(it => {
+            if (STOCK_REPO[it.codigo]) {
+                STOCK_REPO[it.codigo].consumido += it.cantidad;
+            }
+        });
+
+        renderizarTurnos();
+        renderizarTablaStock();
+        actualizarBadges();
+        alert('⚡ Ejecutado con éxito: Se han descontado los insumos del Stock Final Redondeado.');
+    }
+
+    function renderizarTablaStock() {
+        const tbody = document.getElementById('tbodyStockRepo');
+        tbody.innerHTML = '';
+
+        Object.keys(STOCK_REPO).forEach(codigo => {
+            const item = STOCK_REPO[codigo];
+            const actual = Math.max(0, item.inicial - item.consumido);
+            const porcentaje = Math.round((actual / item.inicial) * 100);
+
+            let claseBarra = '';
+            if (porcentaje <= 20) claseBarra = 'danger';
+            else if (porcentaje <= 50) claseBarra = 'warning';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><code>${codigo}</code></td>
+                    <td><strong>${item.nombre}</strong></td>
+                    <td>${item.inicial} (100%)</td>
+                    <td style="color:#c62828; font-weight:600;">-${item.consumido}</td>
+                    <td style="font-weight:700;">${actual}</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="stock-progress-bar" style="flex:1;"><div class="stock-progress-fill ${claseBarra}" style="width: ${porcentaje}%;"></div></div>
+                            <span style="font-size:0.65rem; font-weight:700; min-width:35px;">${porcentaje}%</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        document.getElementById('badgeStock').textContent = Object.keys(STOCK_REPO).length;
+    }
+
+    function filtrarTablaStock() {
+        const filtro = document.getElementById('buscadorStockRepo').value.toLowerCase();
+        const filas = document.querySelectorAll('#tbodyStockRepo tr');
+        filas.forEach(f => {
+            const texto = f.textContent.toLowerCase();
+            f.style.display = texto.includes(filtro) ? '' : 'none';
+        });
+    }
+
+    function actualizarFarmacia() {
+        const tbody = document.getElementById('tbodyFarmacia');
+        if (farmaciaItems.length === 0) return;
+        let html = '';
+        farmaciaItems.forEach((it, idx) => {
+            html += `<tr><td>${idx+1}</td><td><strong>${it.material}</strong></td><td>${it.codigo}</td><td>${it.cantidad}</td><td>${it.indicacion}</td><td>${it.horario}</td><td>${it.solicitadoPor}</td><td>${it.fecha}</td><td><span class="estado-pill pendiente">${it.estado}</span></td></tr>`;
+        });
+        tbody.innerHTML = html;
+        document.getElementById('badgeFarmacia').textContent = farmaciaItems.length;
+    }
+
+    function actualizarBadges() {
+        document.getElementById('badgeMedico').textContent = Object.keys(indicacionesAutorizadas).length;
+    }
+
+    let contadorFila = 1;
+    function agregarFilaMedico() {
+        contadorFila++;
+        const tbody = document.getElementById('tbodyMedico');
+        const tr = document.createElement('tr');
+        tr.className = 'fila-medico';
+        tr.id = `fila-${contadorFila}`;
+        tr.innerHTML = `
+            <td><span class="orden-auto">${contadorFila}</span></td>
+            <td>
+                <select class="medico-input" id="tipo-${contadorFila}" style="min-width:80px;">
+                    <option value="">Tipo</option>
+                    <option value="PHP">PHP</option>
+                    <option value="MEDICACION">MEDICACION</option>
+                    <option value="ANALGESIA">ANALGESIA</option>
+                </select>
+            </td>
+            <td>
+                <input type="text" class="medico-input" id="indicacionMedica-${contadorFila}" placeholder="Indicación">
+            </td>
+            <td>
+                <div class="desc-container farmacia-medico">
+                    <div class="desc-lista" id="farmaciaLista-${contadorFila}">
+                        <div style="color:#6a7f96; font-size:0.6rem; padding:3px;">Buscar y agregar items...</div>
+                    </div>
+                    <div class="desc-actions" style="display:flex; gap:4px; margin-top:2px;">
+                        <div class="buscador-wrapper" style="flex:1;">
+                            <input type="text" class="buscador-input" id="farmaciaBuscador-${contadorFila}" placeholder="🔍 Buscar en stock UCIA..." autocomplete="off">
+                            <i class="fas fa-search lupa"></i>
+                            <div class="buscador-dropdown-embebido" id="farmaciaDropdown-${contadorFila}"></div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <select class="medico-input" id="via-${contadorFila}">
+                    <option value="Endovenosa">Endovenosa</option>
+                    <option value="Oral">Oral</option>
+                </select>
+            </td>
+            <td>
+                <select class="select-horario" id="frecuencia-${contadorFila}">
+                    <option value="Cada 6 h|01:00|07:00|13:00|19:00">Cada 6 h (01·07·13·19)</option>
+                    <option value="Cada 12 h|07:00|19:00">Cada 12 h (07·19)</option>
+                </select>
+            </td>
+            <td>
+                <input type="text" class="medico-input" id="profMedico-${contadorFila}" placeholder="Nombre médico">
+                <div class="trazabilidad-box"><span id="fechaMedico-${contadorFila}">—</span> <span id="horaMedico-${contadorFila}">—</span></div>
+            </td>
+            <td><span class="estado-pill pendiente" id="estadoPills-${contadorFila}"><i class="fas fa-clock"></i> Pendiente</span></td>
+            <td><button class="btn-autorizar" onclick="autorizarIndicacion('${contadorFila}')"><i class="fas fa-check-circle"></i> Autorizar</button></td>
+            <td><button class="btn-finalizar" id="btnFinalizar-${contadorFila}" onclick="finalizarIndicacion('${contadorFila}')" disabled style="opacity:0.4; cursor:not-allowed;"><i class="fas fa-stop-circle"></i> Finalizar</button></td>
+        `;
+        tbody.appendChild(tr);
+        configurarBuscadorFarmaciaFila(contadorFila);
+    }
+
+    function finalizarIndicacion(id) {
+        if (indicacionesAutorizadas[id]) {
+            indicacionesAutorizadas[id].activa = false;
+            document.getElementById(`fila-${id}`).style.opacity = '0.5';
+            document.getElementById(`estadoPills-${id}`).className = 'estado-pill ejecutado';
+            document.getElementById(`estadoPills-${id}`).innerHTML = 'Finalizada';
+            renderizarTurnos();
+            alert('Indicación finalizada.');
+        }
+    }
+</script>
+</body>
+</html>
